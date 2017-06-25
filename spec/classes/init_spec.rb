@@ -9,22 +9,26 @@ describe 'memcached' do
             processorcount: '1' }
         end
 
-        context 'set to true' do
-          let(:params) { { manage_firewall: true } }
+        ['true', true].each do |value|
+          context "set to #{value}" do
+            let(:params) { { manage_firewall: value } }
 
-          it { is_expected.to contain_class('memcached') }
+            it { is_expected.to contain_class('memcached') }
 
-          it { is_expected.to contain_firewall('100_tcp_11211_for_memcached') }
-          it { is_expected.to contain_firewall('100_udp_11211_for_memcached') }
+            it { is_expected.to contain_firewall('100_tcp_11211_for_memcached') }
+            it { is_expected.to contain_firewall('100_udp_11211_for_memcached') }
+          end
         end
 
-        context 'set to false' do
-          let(:params) { { manage_firewall: false } }
+        ['false', false].each do |value|
+          context "set to #{value}" do
+            let(:params) { { manage_firewall: value } }
 
-          it { is_expected.to contain_class('memcached') }
+            it { is_expected.to contain_class('memcached') }
 
-          it { is_expected.not_to contain_firewall('100_tcp_11211_for_memcached') }
-          it { is_expected.not_to contain_firewall('100_udp_11211_for_memcached') }
+            it { is_expected.not_to contain_firewall('100_tcp_11211_for_memcached') }
+            it { is_expected.not_to contain_firewall('100_udp_11211_for_memcached') }
+          end
         end
 
         context 'set to an invalid type (array)' do
@@ -44,12 +48,15 @@ describe 'memcached' do
     {
       package_ensure: 'present',
       logfile: '/var/log/memcached.log',
+      max_memory: false,
+      max_item_size: false,
+      min_item_size: false,
       lock_memory: false,
       listen_ip: '127.0.0.1',
-      tcp_port: 11211,
-      udp_port: 11211,
+      tcp_port: '11211',
+      udp_port: '11211',
       user: 'nobody',
-      max_connections: 8192,
+      max_connections: '8192',
       install_dev: false,
       processorcount: 1,
       use_sasl: false,
@@ -62,13 +69,15 @@ describe 'memcached' do
    {
      package_ensure: 'latest',
      logfile: '/var/log/memcached.log',
-     max_memory: 2,
+     max_memory: '2',
+     max_item_size: false,
+     min_item_size: false,
      lock_memory: true,
      listen_ip: '127.0.0.1',
-     tcp_port: 11212,
-     udp_port: 11213,
+     tcp_port: '11212',
+     udp_port: '11213',
      user: 'somebdy',
-     max_connections: 8193,
+     max_connections: '8193',
      verbosity: 'vvv',
      processorcount: 3,
      use_sasl: true,
@@ -81,14 +90,20 @@ describe 'memcached' do
      max_memory: '20%',
      lock_memory: false,
      listen_ip: '127.0.0.1',
-     tcp_port: 11212,
-     udp_port: 11213,
+     tcp_port: '11212',
+     udp_port: '11213',
      user: 'somebdy',
-     max_connections: 8193,
+     max_connections: '8193',
      verbosity: 'vvv',
      install_dev: true,
      processorcount: 1,
      extended_opts: %w[lru_crawler lru_maintainer]
+   },
+   {
+     listen_ip: ''
+   },
+   {
+     pidfile: false
    },
    {
      pidfile: '/var/log/memcached.pid'
@@ -176,7 +191,7 @@ describe 'memcached' do
               "-t #{param_hash[:processorcount]}"
             ]
             if param_hash[:max_memory]
-              if param_hash[:max_memory].is_a?(String) && param_hash[:max_memory].end_with?('%')
+              if param_hash[:max_memory].end_with?('%')
                 expected_lines.push('-m 200')
               else
                 expected_lines.push("-m #{param_hash[:max_memory]}")
@@ -305,8 +320,8 @@ describe 'memcached' do
       let :custom_params do
         {
           'listen_ip' => '127.0.0.1',
-          'tcp_port'  => 9999,
-          'udp_port'  => 9999
+          'tcp_port'  => '9999',
+          'udp_port'  => '9999'
         }
       end
 
